@@ -242,25 +242,23 @@ ggplot( TS,                      # Display time series plot.
 
 ### Glucose percentiles
 
-
-
 ```{r}
-Probability <-
+p <-                                
   c( 0.005, 0.010, 0.025, 0.050,
         seq( from = 0.10, 
              to   = 0.90, 
              by = 0.10 ),
     0.950, 0.975, 0.995 )
 
-Percentile <- quantile( Glucose, 
-               probs = Probability,
+Quantiles <- quantile( Glucose, 
+               probs =p,
                omit.na = TRUE )
 
-percent <- names(q)
+percent <- names( p )
 
 Percentiles <-
-  tibble( Probability,
-          Percentile )
+  tibble( p,
+         Quantiles )
 
 Percentiles %>% 
   flextable() %>% 
@@ -279,24 +277,16 @@ Statistics030 <- compute_statistics( Readings, 30 )
 Statistics090 <-compute_statistics( Readings, 90 )
 Statistics180 <- compute_statistics( Readings, 180 )
   
-Report <- 
+Report <-                                   # Create report structure
   bind_rows( Statistics007,
              Statistics014,
              Statistics030,
              Statistics090,
              Statistics180 )
 
-header_values <-                            # Create header for flextable.
-  names( Report )
 
-header_values[11] <-
-  "Precent\nhigh" 
-
-
-Report %>% 
+Report %>%                                 # Display report as a flextable.
   flextable() %>% 
-    add_header_row( top = TRUE,
-                    values = header_values ) %>% 
   autofit()
 
 ```
