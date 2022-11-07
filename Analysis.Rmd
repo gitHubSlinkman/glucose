@@ -1,0 +1,312 @@
+---
+title: "Personnal Glucose Readings Analysis"
+author: "Craig W. Slinkman"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction  
+
+## Initialization
+
+```{r}
+require(here)                          # Needed to determine project location.
+require(tidyverse)                     # I live in the tidyverse.
+require(forcats)                       # Used to handle categorical variables
+require(lubridate)                     # Needed for date manipulation
+require(flextable)                     # Provides table display functionality.
+require(cowplot)                       # For my favorite plot look.
+
+# Define require functions.
+source("D:/R-Projects/Rsource/plot_distribution.R")              # Relative 
+                                                                 #   frequency 
+                                                                 #   dist.
+source("D:/R-Projects/Rsource/plot_qq_norm.R")                   # Normal
+                                                                 #  plot.
+source("D:/R-Projects/RStatistics/compute_mode.R")               # Compute mode.
+source("D:/R-Projects/Diabetes/functions/compute_iqr.R")         # Compute mode. 
+source("D:/R-Projects/Diabetes/functions/compute_statistics.R")  # For stats.
+
+
+
+
+theme_set(theme_cowplot())             # Set the cowplot_theme as the default.
+```
+
+## Locate data  direcotry and read files 
+
+```{r}
+project <- here()                      # Determine location in file system.
+
+file <- 
+  file.path( project,                  # Construct file path to data file.               
+             "data",
+             "diabetes.csv" )
+
+Readings <-                           # Read file into tibble. 
+  read_csv( file )
+
+spec( Readings )                      # Show tibble column specifications.
+
+
+################################################################################
+# Change date_time from character data to a date_time object.
+################################################################################
+
+Readings <- 
+  Readings %>%
+    mutate( date_time = 
+              parse_date_time( 
+                date_time,
+                "YmdHM",
+                locale = Sys.getlocale("LC_TIME" )))
+
+################################################################################
+# Change the names of the variables to make our data list and graphics names
+# start with capital letters.  We only use the last 180 days measurements.
+################################################################################
+
+Readings <-
+  Readings %>% 
+    rename( "Date_time" = "date_time",
+            "Description" = "description",
+            "Glucose"     = "glucose",
+            "Finger"      = "finger" ) %>% 
+    filter( Date_time > now() - 180 * 24 * 60 * 60 )
+
+
+```  
+
+## Last 10 observarions
+
+```{r}
+Readings %>% 
+  slice_tail( n = 10 ) %>% 
+    flextable() %>% 
+      autofit()
+```
+
+  
+## Display barchart of time descriptions
+
+```{r}
+dl <- 
+  c( "Morning", "Post Ride", "Evening" )    # Define descriptive order
+
+Readings <-
+  Readings %>% 
+   mutate( Description =                    # Reorder factors by time.
+            fct_relevel( Description, 
+                         dl ))
+
+this_title <- 
+  paste( "Activities as of ", now() )
+
+ggplot( Readings,
+        aes( x = Description )) +
+  geom_bar( color = "black", 
+           fill  = "green" ) +
+    xlab( "Activity DeScription" ) +
+    ylab( "Frequency" ) +
+    ggtitle( this_title )
+
+```
+
+## Time Series plot of glucose readings
+
+```{r}
+y_scale <- seq(from = 50,                   # glucose glucose marks and labels.
+                to  = 200,
+                by = 10 )
+
+this_title <- 
+  paste( "Blood Glucose readings as of"     # Create plot title.
+         , now())
+
+ggplot( Readings,                           # Display plot.
+        aes( x   = Date_time,
+             y   = Glucose )) +
+  geom_line() +
+  # geom_point( aes( color = Description),
+  #             size = 2 ) +
+  xlab( "Date-Time" ) +
+  ylab( "Glucose(mg/dl)") +
+  ggtitle( this_title ) +
+  scale_y_continuous( breaks = y_scale, 
+                      labels = y_scale,
+                      limits = c( 60, 200 ))
+
+```  
+
+## Boxplot of glucose readings by time description
+
+```{r}
+this_title <-
+  paste( "Blood Clucose readings by time description\n as of",
+         now() )
+
+ggplot( Readings,
+        aes( x = 
+               fct_relevel( Description, dl ),
+             y = Glucose )) +
+        geom_boxplot( na.rm          = TRUE,
+                      outlier.colour = "red", 
+                      outlier.shape  = 16,
+                      outlier.size   = 2, 
+                      notch          =TRUE ) +
+  scale_y_continuous( breaks = y_scale, 
+                      labels = y_scale,
+                      limits = c( 60, 200 )) +
+  ggtitle( this_title )
+```
+  
+  
+## Extract gluocse vector from the readings tibble
+
+```{r}
+Glucose <-                                  # Extract glucose
+  Readings %>% 
+    pull(Glucose)
+
+Glucose <-                                  # Remove missing values
+  Glucose[!is.na(Glucose)]
+
+n <- length(Glucose)                        # Determine length of glucose
+                                            # vector
+```
+
+## Rleative frequency distribution with density smoother
+
+```{r}
+this_title <- 
+  paste( "Relative frquency distribution with smoothed density",
+         "\nas of", now())
+plot_distribution( Glucose, 
+                   "Glucose(mg/dl)", 
+                   this_title )
+```
+
+## Normal Quantile-Quentile plot (qq-plot)
+
+```{r}
+plot_qq_norm( Glucose, R = 100,
+              variable_name = "Glocose(mg/dl)",
+              "QQ Plot of glucose")
+```
+  
+## Time series plot with lowess smoothing function
+  
+```{r}
+TS <-                                       # Extract time series
+  Readings %>% 
+    filter( Description == "Morning" |
+            Description == "Evening" ) %>% 
+      mutate( date = date(Date_time))
+      
+  
+n <- dim(TS)[1]                             # Create time series time index.
+Index <- 1:n
+
+TS <-
+  TS %>% 
+    add_column( Index  )
+
+s <-
+  loess( Glucose ~ Index,
+         data = TS,
+         span = 2/3 )
+
+Smooth <- predict(s)
+
+TS <-
+  TS %>% 
+    add_column( Smooth  )
+                                 # Display tibble.
+
+ggplot( TS,                      # Display time series plot.
+        aes( x   = Date_time,
+             y   = Glucose )) +
+  geom_line() +
+  geom_line( aes( x =  Date_time, 
+                  y = Smooth )) +
+  xlab( "Date Time") +
+  ggtitle( "Smoothed Glucose readings by Date")
+ 
+```
+
+## Descriptive statistics
+
+### Glucose percentiles
+
+
+
+```{r}
+Probability <-
+  c( 0.005, 0.010, 0.025, 0.050,
+        seq( from = 0.10, 
+             to   = 0.90, 
+             by = 0.10 ),
+    0.950, 0.975, 0.995 )
+
+Percentile <- quantile( Glucose, 
+               probs = Probability,
+               omit.na = TRUE )
+
+percent <- names(q)
+
+Percentiles <-
+  tibble( Probability,
+          Percentile )
+
+Percentiles %>% 
+  flextable() %>% 
+    autofit() %>% 
+    theme_box()
+```
+
+
+### Compute and display descriptive statistics by days
+
+```{r}
+
+Statistics007 <- compute_statistics( Readings, 7  )
+Statistics014 <- compute_statistics( Readings, 14 )
+Statistics030 <- compute_statistics( Readings, 30 )
+Statistics090 <-compute_statistics( Readings, 90 )
+Statistics180 <- compute_statistics( Readings, 180 )
+  
+Report <- 
+  bind_rows( Statistics007,
+             Statistics014,
+             Statistics030,
+             Statistics090,
+             Statistics180 )
+
+header_values <-                            # Create header for flextable.
+  names( Report )
+
+header_values[11] <-
+  "Precent\nhigh" 
+
+
+Report %>% 
+  flextable() %>% 
+    add_header_row( top = TRUE,
+                    values = header_values ) %>% 
+  autofit()
+
+```
+
+## Apendencix: The data set
+
+```{r}
+Readings %>% 
+  flextable %>% 
+    autofit()
+```
+
+
