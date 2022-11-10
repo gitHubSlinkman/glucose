@@ -28,8 +28,8 @@ source("D:/R-Projects/Rsource/plot_distribution.R")              # Relative
 source("D:/R-Projects/Rsource/plot_qq_norm.R")                   # Normal
                                                                  #  plot.
 source("D:/R-Projects/RStatistics/compute_mode.R")               # Compute mode.
-source("D:/R-Projects/Diabetes/functions/compute_iqr.R")         # Compute mode. 
-source("D:/R-Projects/Diabetes/functions/compute_statistics.R")  # For stats.
+source("D:/R-Projects/glucose/functions/compute_iqr.R")         # Compute mode. 
+source("D:/R-Projects/glucose/functions/compute_statistics.R")  # For stats.
 
 
 
@@ -81,11 +81,12 @@ Readings <-
 
 ```  
 
-## Last 10 observarions
+## Last 14 (One week) observarions
+
 
 ```{r}
 Readings %>% 
-  slice_tail( n = 10 ) %>% 
+  slice_tail( n = 14 ) %>% 
     flextable() %>% 
       autofit()
 ```

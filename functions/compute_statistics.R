@@ -7,7 +7,7 @@ require(lubridate)                     # Needed for date manipulation
 require(flextable)                     # Provides table display functionality
 
 source("D:/R-Projects/RStatistics/compute_mode.R")
-source("D:/R-Projects/Diabetes/functions/compute_iqr.R")
+source("D:/R-Projects/glucose/functions/compute_iqr.R")
 
 compute_statistics <- 
   function( dftbl, days ){
@@ -29,7 +29,6 @@ compute_statistics <-
                                          quantile( Glucose, 0.25 )),
                        Minimum  = min( Glucose ),
                        Maximum  = max( Glucose ),
-                       High     =  round( 100 * sum( 
-                         ifelse( Glucose > 130, 1, 0 ))/n() , 1))
+                       High = sum( if_else( Glucose > 130, 1, 0)))
       Summary
     }
