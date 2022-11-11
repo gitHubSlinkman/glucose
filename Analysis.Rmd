@@ -271,8 +271,7 @@ Percentiles %>%
 ### Compute and display descriptive statistics by days
 
 ```{r}
-
-Statistics007 <- compute_statistics( Readings, 7  )
+Statistics007 <- compute_statistics( Readings, 7  ) 
 Statistics014 <- compute_statistics( Readings, 14 )
 Statistics030 <- compute_statistics( Readings, 30 )
 Statistics090 <-compute_statistics( Readings, 90 )
