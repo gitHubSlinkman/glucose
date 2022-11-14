@@ -31,13 +31,10 @@ source("D:/R-Projects/RStatistics/compute_mode.R")               # Compute mode.
 source("D:/R-Projects/glucose/functions/compute_iqr.R")         # Compute mode. 
 source("D:/R-Projects/glucose/functions/compute_statistics.R")  # For stats.
 
-
-
-
 theme_set(theme_cowplot())             # Set the cowplot_theme as the default.
 ```
 
-## Locate data  direcotry and read files 
+## Locate data  directory and read files 
 
 ```{r}
 project <- here()                      # Determine location in file system.
@@ -66,17 +63,12 @@ Readings <-
                 locale = Sys.getlocale("LC_TIME" )))
 
 ################################################################################
-# Change the names of the variables to make our data list and graphics names
-# start with capital letters.  We only use the last 180 days measurements.
+# We only use the last 180 days measurements.
 ################################################################################
 
 Readings <-
   Readings %>% 
-    rename( "Date_time" = "date_time",
-            "Description" = "description",
-            "Glucose"     = "glucose",
-            "Finger"      = "finger" ) %>% 
-    filter( Date_time > now() - 180 * 24 * 60 * 60 )
+    filter( date_time > now() - 180 * 24 * 60 * 60 )
 
 
 ```  
@@ -94,24 +86,25 @@ Readings %>%
   
 ## Display barchart of time descriptions
 
+We draw a barchart of the frequency of observations taken in the morning(AM)
+and the number of observarions taken in the evening(PM)
+
 ```{r}
-dl <- 
-  c( "Morning", "Post Ride", "Evening" )    # Define descriptive order
-
-Readings <-
-  Readings %>% 
-   mutate( Description =                    # Reorder factors by time.
-            fct_relevel( Description, 
-                         dl ))
-
 this_title <- 
   paste( "Activities as of ", now() )
 
+Readings <-
+  Readings %>% 
+    mutate( meridian = 
+            if_else( hour(date_time) < 12,
+                        "AM","PM"))
+
+
 ggplot( Readings,
-        aes( x = Description )) +
+        aes( x = meridian )) +
   geom_bar( color = "black", 
            fill  = "green" ) +
-    xlab( "Activity DeScription" ) +
+    xlab( "When measured" ) +
     ylab( "Frequency" ) +
     ggtitle( this_title )
 
@@ -129,11 +122,9 @@ this_title <-
          , now())
 
 ggplot( Readings,                           # Display plot.
-        aes( x   = Date_time,
-             y   = Glucose )) +
+        aes( x   = date_time,
+             y   = glucose )) +
   geom_line() +
-  # geom_point( aes( color = Description),
-  #             size = 2 ) +
   xlab( "Date-Time" ) +
   ylab( "Glucose(mg/dl)") +
   ggtitle( this_title ) +
@@ -147,13 +138,12 @@ ggplot( Readings,                           # Display plot.
 
 ```{r}
 this_title <-
-  paste( "Blood Clucose readings by time description\n as of",
+  paste( "Blood Glucose readings by when in day taken\n as of",
          now() )
 
 ggplot( Readings,
-        aes( x = 
-               fct_relevel( Description, dl ),
-             y = Glucose )) +
+        aes( x = meridian,
+             y = glucose )) +
         geom_boxplot( na.rm          = TRUE,
                       outlier.colour = "red", 
                       outlier.shape  = 16,
@@ -169,14 +159,14 @@ ggplot( Readings,
 ## Extract gluocse vector from the readings tibble
 
 ```{r}
-Glucose <-                                  # Extract glucose
+glucose <-                                  # Extract glucose
   Readings %>% 
-    pull(Glucose)
+    pull(glucose)
 
-Glucose <-                                  # Remove missing values
-  Glucose[!is.na(Glucose)]
+glucose <-                                  # Remove missing values.
+  glucose[!is.na(glucose)]
 
-n <- length(Glucose)                        # Determine length of glucose
+n <- length(glucose)                        # Determine length of glucose
                                             # vector
 ```
 
@@ -186,7 +176,7 @@ n <- length(Glucose)                        # Determine length of glucose
 this_title <- 
   paste( "Relative frquency distribution with smoothed density",
          "\nas of", now())
-plot_distribution( Glucose, 
+plot_distribution( glucose, 
                    "Glucose(mg/dl)", 
                    this_title )
 ```
@@ -194,7 +184,7 @@ plot_distribution( Glucose,
 ## Normal Quantile-Quentile plot (qq-plot)
 
 ```{r}
-plot_qq_norm( Glucose, R = 100,
+plot_qq_norm( glucose, R = 100,
               variable_name = "Glocose(mg/dl)",
               "QQ Plot of glucose")
 ```
@@ -204,37 +194,36 @@ plot_qq_norm( Glucose, R = 100,
 ```{r}
 TS <-                                       # Extract time series
   Readings %>% 
-    filter( Description == "Morning" |
-            Description == "Evening" ) %>% 
-      mutate( date = date(Date_time))
+      mutate( date = date(date_time))
       
   
 n <- dim(TS)[1]                             # Create time series time index.
-Index <- 1:n
+index <- 1:n
 
 TS <-
   TS %>% 
-    add_column( Index  )
+    add_column( index  )
 
 s <-
-  loess( Glucose ~ Index,
+  loess( glucose ~ index,
          data = TS,
          span = 2/3 )
 
-Smooth <- predict(s)
+smooth <- predict(s)
 
 TS <-
   TS %>% 
-    add_column( Smooth  )
+    add_column( smooth  )
                                  # Display tibble.
 
 ggplot( TS,                      # Display time series plot.
-        aes( x   = Date_time,
-             y   = Glucose )) +
+        aes( x   = date_time,
+             y   = glucose )) +
   geom_line() +
-  geom_line( aes( x =  Date_time, 
-                  y = Smooth )) +
-  xlab( "Date Time") +
+  geom_line( aes( x =  date_time, 
+                  y = smooth )) +
+  xlab( "Date-Time") +
+  ylab( "Smoothed glucose readings(mg/dL)") +
   ggtitle( "Smoothed Glucose readings by Date")
  
 ```
@@ -244,25 +233,38 @@ ggplot( TS,                      # Display time series plot.
 ### Glucose percentiles
 
 ```{r}
-p <-                                
-  c( 0.005, 0.010, 0.025, 0.050,
-        seq( from = 0.10, 
-             to   = 0.90, 
-             by = 0.10 ),
-    0.950, 0.975, 0.995 )
+ Probability <-                                
+  c( 0.005, 
+     0.010, 
+     0.025, 
+     0.050,
+     0.250,
+     0.500,
+     0.750,
+     0.950,
+     0.975,
+     0.990,
+     0.995 )
 
-Quantiles <- quantile( Glucose, 
-               probs =p,
+Values <- quantile( glucose, 
+               probs = Probability,
                omit.na = TRUE )
 
-percent <- names( p )
-
 Percentiles <-
-  tibble( p,
-         Quantiles )
+  tibble( Probability,
+          Values )
+
 
 Percentiles %>% 
   flextable() %>% 
+    add_header(
+      values =  list( 
+       Probability  = "Glucose Percentiles" )) %>% 
+       merge_at( i = 1, j = 1:2, part = "header") %>% 
+       align( i = 1,
+              j = 1,
+       align = "left",
+       part = "header" ) %>% 
     autofit() %>% 
     theme_box()
 ```
@@ -291,6 +293,12 @@ Report %>%                                 # Display report as a flextable.
 
 ```
 
+### Last 7 days glucose plot
+
+
+
+--------------------------------------------------------------------------------
+ 
 ## Apendencix: The data set
 
 ```{r}

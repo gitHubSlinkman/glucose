@@ -17,18 +17,19 @@ compute_statistics <-
 
       Summary <-
         dftbl %>% 
-          filter( Date_time > first_date ) %>% 
+          filter( date_time > first_date ) %>% 
             summarise( Days     = days,
                        Since    = as.Date( first_date ),
                        Readings = n(),
-                       Mean     = round(   mean( Glucose ), 1),
-                       Std      = round(     sd( Glucose ), 1),
+                       Mean     = round(   mean( glucose ), 1),
+                       Std      = round(     sd( glucose ), 1),
                        CV       = round( 100 * Std/ Mean, 1 ),
-                       Median   = round( median( Glucose ), 1),
-                       IQR      = round( quantile( Glucose, 0.75) -
-                                         quantile( Glucose, 0.25 )),
-                       Minimum  = min( Glucose ),
-                       Maximum  = max( Glucose ),
-                       High = sum( if_else( Glucose > 130, 1, 0)))
+                       Median   = round( median( glucose ), 1),
+                       Mode     = compute_mode( glucose ),
+                       IQR      = round( quantile( glucose, 0.75) -
+                                         quantile( glucose, 0.25 )),
+                       Minimum  = min( glucose ),
+                       Maximum  = max( glucose ),
+                       High = sum( if_else( glucose > 130, 1, 0)))
       Summary
     }
