@@ -299,7 +299,7 @@ Report %>%                                 # Display report as a flextable.
 
 --------------------------------------------------------------------------------
  
-## Apendencix: The data set
+## Apendendix: The data set
 
 ```{r}
 Readings %>% 
