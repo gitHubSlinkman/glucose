@@ -294,6 +294,38 @@ Report %>%                                 # Display report as a flextable.
 
 ### Last 7 days glucose plot
 
+```{r}
+current_date_time <-                        # Get current date_time 
+  now()
+
+first_date_time   <-                        # Compute date 7 days ago.
+  current_date_time - 7 * 24 * 60 * 60
+
+Last_7_Days <-                              # Get last 7 days activities.
+  Readings %>% 
+    filter( date_time > first_date_time )
+
+date_times <-
+  Last_7_Days %>% 
+    pull( date_time )
+
+hour(date_times) <-
+  ifelse( hour(date_times) <= 12, 8, 23 )
+
+minute(date_times) <- 0
+
+ggplot( Last_7_Days,
+        aes( x = date_time,
+             y = glucose )) +
+  geom_line() +
+  scale_x_datetime( name = "Date-time", 
+                    breaks = date_times,
+                    labels = date_times ) +
+  theme( axis.text.x = element_text( size = 12, angle = 90))
+
+```
+
+
 
 
 --------------------------------------------------------------------------------
