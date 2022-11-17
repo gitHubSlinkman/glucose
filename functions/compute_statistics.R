@@ -25,11 +25,10 @@ compute_statistics <-
                        Std      = round(     sd( glucose ), 1),
                        CV       = round( 100 * Std/ Mean, 1 ),
                        Median   = round( median( glucose ), 1),
-                       Mode     = compute_mode( glucose ),
+                       Mode     = compute_mode( glucose )[1],
                        IQR      = round( quantile( glucose, 0.75) -
                                          quantile( glucose, 0.25 )),
                        Minimum  = min( glucose ),
-                       Maximum  = max( glucose ),
-                       High = sum( if_else( glucose > 130, 1, 0)))
+                       Maximum  = max( glucose ))
       Summary
     }
