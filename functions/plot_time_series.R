@@ -7,30 +7,21 @@ plot_time_series <-
   function( Readings,
             days ){
     
-    day_to_seconds = 24 * 60 * 60           #  Number of seconds in day.
+    day_seconds = 24 * 60 * 60         #  Number of seconds in day.
     
-    current_date_time <-                    # Get current date_time 
-      now()
-    
-    begin_date_time   <-                    # Compute date 7 days ago.
-      current_date_time - 
-      days * day_to_seconds
-    
-    x_min_date <-                         # Compute minimum x-axis value.
-      floor_date( 
-        begin_date_time,
-        unit = "day" )
-    
-    x_max_date <-                           # Compute the maximum date.
+    current_date <-                    # Get current date. 
       ceiling_date( 
-        current_date_time,
+        now(),
         unit = "day" )
     
+    begin_date <-                      # Compute date 7 days ago.
+      current_date - 
+      ( days * day_seconds )
     
     Readings <-                              # Get all readings since the begin
       Readings %>%                           #  date.
-        filter( date_time > 
-                  begin_date_time )
+        filter( date_time >= 
+                  begin_date )
     
     n <- dim(Readings )[1]                   # Get number of observations.
     
@@ -47,10 +38,34 @@ plot_time_series <-
     }
     
     xbl <-                                  # Compute x-axis breaks and labels.
-      seq( from = x_min_date,
-           to   = x_max_date,
+      seq( from = begin_date,
+           to   = current_date,
            by   = increment *  
-             day_to_seconds )
-
+             day_seconds )
     
+    ybar <-
+      mean( Readings %>% 
+          pull( glucose ))
+    
+    ggplot( Readings,                       # Plot time series and mean.
+            aes( x = date_time,
+                 y = glucose )) +
+      geom_line() +
+      geom_hline( yintercept = ybar,
+                  linetype = 2,
+                  color = "blue" ) +
+      geom_label(aes( x = xbl[1] +  0.75 *day_seconds, 
+                      y = ybar + 2 ),
+                      label = "Mean Glucose Reading",
+                      color = "blue",
+                      stat = "unique" ) +
+      scale_x_datetime( name = "Date", 
+                        breaks = xbl,
+                        labels = xbl ) +
+      ylab( "Glucose(ng/dl)") +
+      ggtitle( paste( "Glucose readings from", 
+                      as.Date( begin_date ),
+                      "to",
+                      as.Date( current_date ))) +
+      theme( axis.text.x = element_text( size = 10, angle = 90 ))
   }

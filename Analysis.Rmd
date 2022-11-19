@@ -22,16 +22,18 @@ require(flextable)                     # Provides table display functionality.
 require(cowplot)                       # For my favorite plot look.
 
 # Define require functions.
-source("D:/R-Projects/Rsource/plot_distribution.R")              # Relative 
+source("D:/R-Projects/Rsource/plot_distribution.R")              # Relative ...
                                                                  #   frequency 
                                                                  #   dist.
-source("D:/R-Projects/Rsource/plot_qq_norm.R")                   # Compute mode.
+source("D:/R-Projects/Rsource/plot_qq_norm.R")                   # Draw qq plot.
 source("D:/R-Projects/glucose/functions/compute_mode.R")         # Compute mode.
-source("D:/R-Projects/glucose/functions/compute_iqr.R")         # Compute mode. 
+source("D:/R-Projects/glucose/functions/compute_iqr.R")         # Compute iqr. 
 source("D:/R-Projects/glucose/functions/compute_statistics.R")  # Compute
                                                                 #  summary
-                                                                # statistics
-source("D:/R-Projects/glucose/functions/plot_last_007_days.R")  # Plot ts.
+                                                                #  statistics.
+source("D:/R-Projects/glucose/functions/plot_time_series.R")    # Plot time-
+                                                                #  series.
+
 
 
 theme_set(theme_cowplot())             # Set the cowplot_theme as the default.
@@ -294,32 +296,15 @@ Report %>%                                 # Display report as a flextable.
   autofit()
 ```
 
-### Seven day analysis
+## Analysis by number of days
+
+### Last 7 day's glucose readings
 
 ```{r plot_last_007_days_readings}
-plot_last_007_days( Readings )
-```
-
-### Seven days summary statistics
-
-```{r ummarize last_7_days} 
-Statistics007 %>%                           # Display report as a flextable.
+plot_time_series( Readings, 7 )            # Plot last seven days readings.
+Statistics007 %>%                          # Display report as a flextable.
   flextable() %>% 
   autofit()
-```
-
-### Plot 
-
-
-
---------------------------------------------------------------------------------
- 
-## Apendendix: The data set
-
-```{r}
-Readings %>% 
-  flextable %>% 
-    autofit()
 ```
 
 
