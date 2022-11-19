@@ -17,9 +17,13 @@ plot_last_007_days <-
       current_date_time - 
       days * day_to_seconds
     
-    Last_7_Days <-                              # Get last 7 days activities.
+    Last_007_Days <-                              # Get last 7 days activities.
       Readings %>% 
       filter( date_time > begin_date_time )
+    
+    xbar <-                                     # Compute mean of last 7 days.
+      mean( Last_007_Days %>% 
+              pull( glucose ))
     
     from_date <-
       floor_date( begin_date_time,              # Compute lower break_label.
@@ -36,10 +40,13 @@ plot_last_007_days <-
            by   = day_to_seconds )
     
     
-    ggplot( Last_7_Days,
+    ggplot( Last_007_Days,                         # Olot time series and mean
             aes( x = date_time,
                  y = glucose )) +
       geom_line() +
+      geom_hline( yintercept = xbar,
+                  linetype = 2,
+                  color = "blue" ) +
       scale_x_datetime( name = "Date", 
                         breaks = break_labels,
                         labels = break_labels ) +
@@ -48,5 +55,5 @@ plot_last_007_days <-
                       as.Date( begin_date_time ),
                       "to",
                       as.Date( current_date_time ))) +
-      theme( axis.text.x = element_text( size = 12, angle = 90))
+      theme( axis.text.x = element_text( size = 10, angle = 90))
   }
