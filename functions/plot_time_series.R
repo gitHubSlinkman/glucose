@@ -41,7 +41,7 @@ plot_time_series <-
       seq( from = begin_date,
            to   = current_date,
            by   = increment *  
-             day_seconds )
+             0.5 * day_seconds )
     
     ybar <-
       mean( Readings %>% 
@@ -56,11 +56,12 @@ plot_time_series <-
                   stat    = "unique" ) +
       scale_x_datetime( name = "Date", 
                         breaks = xbl,
-                        labels = xbl + day_seconds ) +
+                        labels = xbl  ) +
       annotate( x = max(xbl) + 0.25 * day_seconds,
                 y    = ybar +0.5,
                 geom = "text",
-                label = "Mean",
+                label = "bar(y)",
+                parse = TRUE,
                 vjust = 0 ) +
       ylab( "Glucose(ng/dl)") +
       ggtitle( paste( "Glucose readings from", 

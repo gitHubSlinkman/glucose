@@ -80,10 +80,12 @@ Readings <-
 
 ## Last 14 (One week) observarions
 
+Note that the glucose readings below showing the readings in reverse chronological order.  Therefore, the last observation is shown first.
 
 ```{r}
 Readings %>% 
   slice_tail( n = 14 ) %>% 
+  arrange( desc( date_time )) %>% 
     flextable() %>% 
       autofit()
 ```
@@ -311,8 +313,21 @@ Statistics007 %>%                          # Display report as a flextable.
 
 ```{r}
 plot_time_series( Readings, 14 )            # Plot last seven days readings.
-Statistics014 %>%                           # Display report as a flextable.
+
+Statistics014 %>% 
   flextable() %>% 
   autofit()
 ```
+   
+### Last 30 day's glucose readings 
+
+```{r display_lst_30_days_observarion}
+plot_time_series( Readings, 30 )            # Plot last seven days readings.
+
+Statistics030 %>% 
+  flextable() %>% 
+  autofit()
+```
+
+
 
