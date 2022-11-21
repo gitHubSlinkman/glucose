@@ -307,4 +307,12 @@ Statistics007 %>%                          # Display report as a flextable.
   autofit()
 ```
 
+### Last 14 day's glucose readings 
+
+```{r}
+plot_time_series( Readings, 14 )            # Plot last seven days readings.
+Statistics014 %>%                           # Display report as a flextable.
+  flextable() %>% 
+  autofit()
+```
 

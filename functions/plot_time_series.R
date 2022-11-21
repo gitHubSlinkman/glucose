@@ -52,16 +52,16 @@ plot_time_series <-
                  y = glucose )) +
       geom_line() +
       geom_hline( yintercept = ybar,
-                  linetype = 2,
-                  color = "blue" ) +
-      geom_label(aes( x = xbl[1] +  0.75 *day_seconds, 
-                      y = ybar + 2 ),
-                      label = "Mean Glucose Reading",
-                      color = "blue",
-                      stat = "unique" ) +
+                  color    = "darkblue",
+                  stat    = "unique" ) +
       scale_x_datetime( name = "Date", 
                         breaks = xbl,
-                        labels = xbl ) +
+                        labels = xbl + day_seconds ) +
+      annotate( x = max(xbl) + 0.25 * day_seconds,
+                y    = ybar +0.5,
+                geom = "text",
+                label = "Mean",
+                vjust = 0 ) +
       ylab( "Glucose(ng/dl)") +
       ggtitle( paste( "Glucose readings from", 
                       as.Date( begin_date ),
