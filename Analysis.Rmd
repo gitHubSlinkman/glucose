@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r Setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Initialization
 
-```{r  initialization}
+```{r  Initialization}
 require(here)                          # Needed to determine project location.
 require(tidyverse)                     # I live in the tidyverse.
 require(forcats)                       # Used to handle categorical variables
@@ -34,14 +34,12 @@ source("D:/R-Projects/glucose/functions/compute_statistics.R")  # Compute
 source("D:/R-Projects/glucose/functions/plot_time_series.R")    # Plot time-
                                                                 #  series.
 
-
-
 theme_set(theme_cowplot())             # Set the cowplot_theme as the default.
 ```
 
 ## Locate data  directory and read files 
 
-```{r dewtermine_file_path_to_the_data}
+```{r Determine_file_path_to_the_data}
 project <- here()                      # Determine location in file system.
 
 file <- 
@@ -82,7 +80,7 @@ Readings <-
 
 Note that the glucose readings below showing the readings in reverse chronological order.  Therefore, the last observation is shown first.
 
-```{r}
+```{r Display_last_14_observations}
 Readings %>% 
   slice_tail( n = 14 ) %>% 
   arrange( desc( date_time )) %>% 
@@ -96,7 +94,7 @@ Readings %>%
 We draw a barchart of the frequency of observations taken in the morning(AM)
 and the number of observarions taken in the evening(PM)
 
-```{r}
+```{r Draw_bar_chart_of_activities}
 this_title <- 
   paste( "Activities as of ", now() )
 
@@ -119,7 +117,7 @@ ggplot( Readings,
 
 ## Time Series plot of glucose readings
 
-```{r}
+```{r plot_last_180_days_observations}
 y_scale <- seq(from = 50,                   # glucose glucose marks and labels.
                 to  = 200,
                 by = 10 )
@@ -143,7 +141,7 @@ ggplot( Readings,                           # Display plot.
 
 ## Boxplot of glucose readings by time description
 
-```{r}
+```{r Darw_boxplot_of_glucose_by_time}
 this_title <-
   paste( "Blood Glucose readings by when in day taken\n as of",
          now() )
@@ -165,7 +163,7 @@ ggplot( Readings,
   
 ## Extract gluocse vector from the readings tibble
 
-```{r}
+```{r Extract_glucose}
 glucose <-                                  # Extract glucose
   Readings %>% 
     pull(glucose)
@@ -179,7 +177,7 @@ n <- length(glucose)                        # Determine length of glucose
 
 ## Rleative frequency distribution with density smoother
 
-```{r}
+```{r Plot_histogram_of_glucose}
 this_title <- 
   paste( "Relative frquency distribution with smoothed density",
          "\nas of", now())
@@ -190,7 +188,7 @@ plot_distribution( glucose,
 
 ## Normal Quantile-Quentile plot (qq-plot)
 
-```{r}
+```{r plot_qq_norm_glucose}
 plot_qq_norm( glucose, R = 100,
               variable_name = "Glocose(mg/dl)",
               "QQ Plot of glucose")
@@ -198,7 +196,7 @@ plot_qq_norm( glucose, R = 100,
   
 ## Time series plot with lowess smoothing function
   
-```{r}
+```{r Draw loess_plot_of_glucose}
 TS <-                                       # Extract time series
   Readings %>% 
       mutate( date = date(date_time))
@@ -239,7 +237,7 @@ ggplot( TS,                      # Display time series plot.
 
 ### Glucose percentiles
 
-```{r}
+```{r Compute_180_day_percentile}
  Probability <-                                
   c( 0.005, 
      0.010, 
@@ -322,12 +320,19 @@ Statistics014 %>%
 ### Last 30 day's glucose readings 
 
 ```{r display_lst_30_days_observarion}
-plot_time_series( Readings, 30 )            # Plot last seven days readings.
+plot_time_series( Readings, 90 )            # Plot last seven days readings.
 
 Statistics030 %>% 
   flextable() %>% 
   autofit()
 ```
 
+### Last 90 day's glucose readings 
 
+```{r display_lst_90_days_observarion}
+plot_time_series( Readings, 90 )            # Plot last seven days readings.
 
+Statistics090 %>% 
+  flextable() %>% 
+  autofit()
+```

@@ -40,8 +40,7 @@ plot_time_series <-
     xbl <-                                  # Compute x-axis breaks and labels.
       seq( from = begin_date,
            to   = current_date,
-           by   = increment *  
-             0.5 * day_seconds )
+           by   = increment *  day_seconds )
     
     ybar <-
       mean( Readings %>% 
