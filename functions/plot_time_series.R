@@ -56,6 +56,7 @@ plot_time_series <-
       scale_x_datetime( name = "Date", 
                         breaks = xbl,
                         labels = xbl  ) +
+      scale_x_continuous(limits = c(90, 250)) +
       annotate( x = max(xbl) + 0.25 * day_seconds,
                 y    = ybar +0.5,
                 geom = "text",
