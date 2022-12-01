@@ -7,20 +7,22 @@ plot_time_series <-
   function( Readings,
             days ){
     
-    day_seconds = 24 * 60 * 60         #  Number of seconds in day.
+    day_seconds = 24 * 60 * 60              #  Number of seconds in day.
     
-    current_date <-                    # Get current date. 
+    current_date <-                         # Get current date. 
       ceiling_date( 
         now(),
         unit = "day" )
     
-    begin_date <-                      # Compute date 7 days ago.
-      current_date - 
-      ( days * day_seconds )
+    begin_date <-                           # Compute date 7 days ago.
+      floor_date(
+        current_date - 
+          days *day_seconds,
+          unit = "day" )
     
     Readings <-                              # Get all readings since the begin
       Readings %>%                           #  date.
-        filter( date_time >= 
+        filter( date_time > 
                   begin_date )
     
     n <- dim(Readings )[1]                   # Get number of observations.
@@ -40,7 +42,11 @@ plot_time_series <-
     xbl <-                                  # Compute x-axis breaks and labels.
       seq( from = begin_date,
            to   = current_date,
-           by   = increment *  day_seconds )
+           by   = increment * day_seconds )
+    
+    ybl <- seq( from = 50,
+                to   = 250,
+                by = 25 )
     
     ybar <-
       mean( Readings %>% 
@@ -56,7 +62,7 @@ plot_time_series <-
       scale_x_datetime( name = "Date", 
                         breaks = xbl,
                         labels = xbl  ) +
-      scale_x_continuous(limits = c(90, 250)) +
+      scale_y_continuous(limits = c( 50, 250)) +
       annotate( x = max(xbl) + 0.25 * day_seconds,
                 y    = ybar +0.5,
                 geom = "text",

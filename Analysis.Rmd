@@ -146,6 +146,10 @@ this_title <-
   paste( "Blood Glucose readings by when in day taken\n as of",
          now() )
 
+y_scale <- seq( from = 90,
+                to   = 230,
+                by   = 10 )
+
 ggplot( Readings,
         aes( x = meridian,
              y = glucose )) +
@@ -320,7 +324,7 @@ Statistics014 %>%
 ### Last 30 day's glucose readings 
 
 ```{r display_lst_30_days_observarion}
-plot_time_series( Readings, 90 )            # Plot last seven days readings.
+plot_time_series( Readings, 90 )            # Plot last 30 days readings.
 
 Statistics030 %>% 
   flextable() %>% 
