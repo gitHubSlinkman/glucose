@@ -9,9 +9,14 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Introduction  
+## Introduction 
+
+This R Markdown dicument keeps track of my glucose.  It treats the the data as
+a time series.  
 
 ## Initialization
+
+We load load the required packages and functions  for this analysis.
 
 ```{r  Initialization}
 require(here)                          # Needed to determine project location.
@@ -82,9 +87,9 @@ Note that the glucose readings below showing the readings in reverse chronologic
 
 ```{r Display_last_14_observations}
 Readings %>% 
-  slice_tail( n = 14 ) %>% 
-  arrange( desc( date_time )) %>% 
-    flextable() %>% 
+  slice_tail( n = 14 ) %>%                  # Access the last 14 glucose 
+  arrange( desc( date_time )) %>%           # readings, sort then into reverse
+    flextable() %>%                         # chronological order, and display.
       autofit()
 ```
 
@@ -118,15 +123,15 @@ ggplot( Readings,
 ## Time Series plot of glucose readings
 
 ```{r plot_last_180_days_observations}
-y_scale <- seq(from = 50,                   # glucose glucose marks and labels.
-                to  = 200,
-                by = 10 )
+y_scale <- seq( from = 50,                   # Create labels for following
+                to   = 250,                  # plot.
+                by   = 10 )
 
 this_title <- 
-  paste( "Blood Glucose readings as of"     # Create plot title.
-         , now())
+  paste( "Blood Glucose readings as of"     # Create plot title for following 
+         , now())                           # plot.
 
-ggplot( Readings,                           # Display plot.
+ggplot( Readings,                           # Create plot.
         aes( x   = date_time,
              y   = glucose )) +
   geom_line() +
@@ -146,10 +151,6 @@ this_title <-
   paste( "Blood Glucose readings by when in day taken\n as of",
          now() )
 
-y_scale <- seq( from = 90,
-                to   = 230,
-                by   = 10 )
-
 ggplot( Readings,
         aes( x = meridian,
              y = glucose )) +
@@ -158,9 +159,8 @@ ggplot( Readings,
                       outlier.shape  = 16,
                       outlier.size   = 2, 
                       notch          =TRUE ) +
-  scale_y_continuous( breaks = y_scale, 
-                      labels = y_scale,
-                      limits = c( 60, 200 )) +
+  scale_y_continuous( breaks = y_scale,
+                      labels = y_scale  ) +
   ggtitle( this_title )
 ```
   
@@ -209,31 +209,39 @@ TS <-                                       # Extract time series
 n <- dim(TS)[1]                             # Create time series time index.
 index <- 1:n
 
-TS <-
-  TS %>% 
+TS <-                                       # Add index variabklle to tribble for
+  TS %>%                                    # loess smooth.
     add_column( index  )
 
-s <-
-  loess( glucose ~ index,
+smoother <-                                 # Compute smoother.  We use a span
+  loess( glucose ~ index,                   # of two thirds of the data.
          data = TS,
          span = 2/3 )
 
-smooth <- predict(s)
+smooth <- predict( smoother )               # Compute smoothed predictions.
+     
+TS  <-                                      # Add smoother predictions to
+  TS %>%                                    # time series tibble and
+    add_column( smooth ) %>%                # compute prediction errors.
+    mutate( error = glucose - smooth)        
 
-TS <-
-  TS %>% 
-    add_column( smooth  )
-                                 # Display tibble.
 
-ggplot( TS,                      # Display time series plot.
-        aes( x   = date_time,
+ggplot( TS,                                 # Display time series plot.
+        aes( x   = date,
              y   = glucose )) +
   geom_line() +
-  geom_line( aes( x =  date_time, 
+  geom_line( aes( x =  date, 
                   y = smooth )) +
-  xlab( "Date-Time") +
+  scale_y_continuous( name  = "Date-Time",
+                      labels = y_scale,
+                      breaks = y_scale ) +
   ylab( "Smoothed glucose readings(mg/dL)") +
-  ggtitle( "Smoothed Glucose readings by Date")
+  ggtitle( "Smoothed Glucose readings by Date" )
+
+
+error <-                                   
+  TS %>%
+    pull( error )
  
 ```
 
@@ -340,3 +348,4 @@ Statistics090 %>%
   flextable() %>% 
   autofit()
 ```
+  
