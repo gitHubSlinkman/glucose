@@ -332,7 +332,7 @@ Statistics014 %>%
 ### Last 30 day's glucose readings 
 
 ```{r display_lst_30_days_observarion}
-plot_time_series( Readings, 90 )            # Plot last 30 days readings.
+plot_time_series( Readings, 30 )            # Plot last 30 days readings.
 
 Statistics030 %>% 
   flextable() %>% 
