@@ -63,8 +63,8 @@ plot_time_series <-
                         breaks = xbl,
                         labels = xbl  ) +
       scale_y_continuous(limits = c( 50, 250)) +
-      annotate( x = max(xbl) + 0.25 * day_seconds,
-                y    = ybar +0.5,
+      annotate( x = min(xbl) - 0.35 * day_seconds,
+                y    = ybar,
                 geom = "text",
                 label = "bar(y)",
                 parse = TRUE,

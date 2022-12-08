@@ -247,46 +247,6 @@ error <-
 
 ## Descriptive statistics
 
-### Glucose percentiles
-
-```{r Compute_180_day_percentile}
- Probability <-                                
-  c( 0.005, 
-     0.010, 
-     0.025, 
-     0.050,
-     0.250,
-     0.500,
-     0.750,
-     0.950,
-     0.975,
-     0.990,
-     0.995 )
-
-Values <- quantile( glucose, 
-               probs = Probability,
-               omit.na = TRUE )
-
-Percentiles <-
-  tibble( Probability,
-          Values )
-
-
-Percentiles %>% 
-  flextable() %>% 
-    add_header(
-      values =  list( 
-       Probability  = "Glucose Percentiles" )) %>% 
-       merge_at( i = 1, j = 1:2, part = "header") %>% 
-       align( i = 1,
-              j = 1,
-       align = "left",
-       part = "header" ) %>% 
-    autofit() %>% 
-    theme_box()
-```
-
-
 ### Compute and display descriptive statistics by days
 
 ```{r display_summary_statistics by days}
